@@ -46,19 +46,19 @@ confirm() ->
     [BagA, _BagB, BagC, BagD, BagE] = RiakNodes,
 
     %% Assert manifests are in proper bags
-    lager:info("Manifests in the old bucket are in the master bag"),
+    logger:info("Manifests in the old bucket are in the master bag"),
     {_, MOldInOld} = rtcs_bag:assert_manifest_in_single_bag(
                        ?OLD_BUCKET, ?OLD_KEY_IN_OLD, RiakNodes, BagA),
     {_, MNewInOld} = rtcs_bag:assert_manifest_in_single_bag(
                        ?OLD_BUCKET, ?NEW_KEY_IN_OLD, RiakNodes, BagA),
-    lager:info("A manifest in the new bucket is in non-master bag C"),
+    logger:info("A manifest in the new bucket is in non-master bag C"),
     {_, MNewInNew} = rtcs_bag:assert_manifest_in_single_bag(
                        ?NEW_BUCKET, ?NEW_KEY_IN_NEW, RiakNodes, BagC),
 
     %% Assert blocks are in proper bags
-    lager:info("Old blocks in the old bucket are in the master bag"),
+    logger:info("Old blocks in the old bucket are in the master bag"),
     ok = rtcs_bag:assert_block_in_single_bag(?OLD_BUCKET, MOldInOld, RiakNodes, BagA),
-    lager:info("New blocks in the old/new bucket are in one of non-master bags D or E"),
+    logger:info("New blocks in the old/new bucket are in one of non-master bags D or E"),
     [assert_block_bag(B, K, M, RiakNodes, [BagD, BagE]) ||
         {B, K, M} <- [{?OLD_BUCKET, ?NEW_KEY_IN_OLD, MNewInOld},
                       {?NEW_BUCKET, ?NEW_KEY_IN_NEW, MNewInNew}]],
@@ -85,7 +85,7 @@ assert_block_bag(Bucket, Key, Manifest, RiakNodes, [BagD, BagE]) ->
     ok.
 
 setup_old_bucket_and_key(UserConfig, Bucket, Key) ->
-    lager:info("creating bucket ~p", [Bucket]),
+    logger:info("creating bucket ~p", [Bucket]),
     ?assertEqual(ok, erlcloud_s3:create_bucket(Bucket, UserConfig)),
     Content = rand_content(),
     erlcloud_s3:put_object(Bucket, Key, Content, UserConfig),
@@ -117,7 +117,7 @@ transition_to_multibag_configuration(NodesInMaster, NodeList, StanchionNode) ->
     rt:wait_until_pingable(StanchionNode),
     rtcs_bag:set_weights(rtcs_bag:weights(disjoint)),
     {0, ListWeightRes} = rtcs_bag:list_weight(),
-    lager:info("Weight: ~s~n", [ListWeightRes]),
+    logger:info("Weight: ~s~n", [ListWeightRes]),
     ok.
 
 assert_gc_run(CSNode, UserConfig) ->

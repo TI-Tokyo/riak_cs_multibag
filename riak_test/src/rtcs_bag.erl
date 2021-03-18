@@ -138,7 +138,7 @@ list_weight() ->
 
 list_weight(N) ->
     Cmd = multibagcmd(rt_config:get(rtcs_config:cs_current()), N, io_lib:format("~s", [weight])),
-    lager:info("Running ~s", [Cmd]),
+    logger:info("Running ~s", [Cmd]),
     rt:cmd(Cmd).
 
 bag_weight(N, Kind, BagId, Weight) ->
@@ -149,12 +149,12 @@ bag_weight(N, Kind, BagId, Weight) ->
              end,
     Cmd = multibagcmd(rt_config:get(rtcs_config:cs_current()), N,
                              io_lib:format("~s ~s ~B", [SubCmd, BagId, Weight])),
-    lager:info("Running ~s", [Cmd]),
+    logger:info("Running ~s", [Cmd]),
     rt:cmd(Cmd).
 
 bag_refresh(N) ->
     Cmd = multibagcmd(rt_config:get(rtcs_config:cs_current()), N, "refresh"),
-    lager:info("Running ~p", [Cmd]),
+    logger:info("Running ~p", [Cmd]),
     rt:cmd(Cmd).
 
 %% Assertion utilities
@@ -167,8 +167,8 @@ assert_manifest_in_single_bag(Bucket, Key, AllBags, ExpectedBag) ->
     RiakBucket = <<"0o:", (rtcs:md5(Bucket))/binary>>,
     case assert_only_in_single_bag(ExpectedBag, NotExistingBags, RiakBucket, Key) of
         {error, Reason} ->
-            lager:error("assert_manifest_in_single_bag for ~w/~w error: ~p",
-                        [Bucket, Key, Reason]),
+            logger:error("assert_manifest_in_single_bag for ~w/~w error: ~p",
+                         [Bucket, Key, Reason]),
             {error, {Bucket, Key, Reason}};
         Object ->
             [[{UUID, M}]] = [binary_to_term(V) || V <- riakc_obj:get_values(Object)],
@@ -186,8 +186,8 @@ assert_block_in_single_bag(Bucket, Manifest, AllBags, ExpectedBag) ->
     case assert_only_in_single_bag(ExpectedBag, NotExistingBags, RiakBucket, RiakKey) of
         {error, Reason} ->
             {_, Key} = Manifest?MANIFEST.bkey,
-            lager:error("assert_block_in_single_bag for ~w/~w [~w] error: ~p",
-                        [Bucket, Key, UUIDForBlock, Reason]),
+            logger:error("assert_block_in_single_bag for ~w/~w [~w] error: ~p",
+                         [Bucket, Key, UUIDForBlock, Reason]),
             {error, {Bucket, Key, UUIDForBlock}, Reason};
         _Object ->
             ok
@@ -200,8 +200,8 @@ assert_no_manifest_in_any_bag(Bucket, Key, AllBags) ->
     case assert_not_in_other_bags(AllBags, RiakBucket, Key) of
         ok -> ok;
         {error, Reason} ->
-            lager:error("assert_no_manifest_in_any_bag for ~w/~w error: ~p",
-                        [Bucket, Key, Reason]),
+            logger:error("assert_no_manifest_in_any_bag for ~w/~w error: ~p",
+                         [Bucket, Key, Reason]),
             {error, {Bucket, Key, Reason}}
     end.
 
@@ -215,8 +215,8 @@ assert_no_block_in_any_bag(Bucket, Manifest, AllBags) ->
         ok -> ok;
         {error, Reason} ->
             {_, Key} = Manifest?MANIFEST.bkey,
-            lager:error("assert_no_block_in_any_bag for ~w/~w [~w] error: ~p",
-                        [Bucket, Key, UUIDForBlock, Reason]),
+            logger:error("assert_no_block_in_any_bag for ~w/~w [~w] error: ~p",
+                         [Bucket, Key, UUIDForBlock, Reason]),
             {error, {Bucket, Key, UUIDForBlock}, Reason}
     end.
 
@@ -252,7 +252,7 @@ assert_only_in_single_bag(ExpectedBag, NotExistingBags, RiakBucket, RiakKey) ->
 assert_in_expected_bag(ExpectedBag, RiakBucket, RiakKey) ->
     case get_riakc_obj(ExpectedBag, RiakBucket, RiakKey) of
         {ok, Object} ->
-            lager:info("~p/~p is found at ~s", [RiakBucket, RiakKey, ExpectedBag]),
+            logger:info("~p/~p is found at ~s", [RiakBucket, RiakKey, ExpectedBag]),
             Object;
         {error, notfound} ->
             {error, {not_found_in_expected_bag, ExpectedBag}}
@@ -265,7 +265,7 @@ assert_not_in_other_bags([NotExistingBag | Rest], RiakBucket, RiakKey) ->
         {error, notfound} ->
             assert_not_in_other_bags(Rest, RiakBucket, RiakKey);
         Res ->
-            lager:info("~p/~p is found at ~s", [RiakBucket, RiakKey, NotExistingBag]),
+            logger:info("~p/~p is found at ~s", [RiakBucket, RiakKey, NotExistingBag]),
             {error, {found_in_unexpected_bag, NotExistingBag, Res}}
     end.
 

@@ -31,7 +31,7 @@ confirm() ->
     UserWest = rtcs_admin:create_user(hd(WestANodes), 1),
     UserEast = rtcs_admin:aws_config(UserWest,[{port, rtcs_config:cs_port(hd(EastANodes))}]),
 
-    lager:info("Initialize weights by zero, without multibag"),
+    logger:info("Initialize weights by zero, without multibag"),
     set_zero_weight(),
     [?assertEqual(ok, erlcloud_s3:create_bucket(
                         ?BUCKET_PREFIX ++ integer_to_list(K),
@@ -39,20 +39,20 @@ confirm() ->
         K <- lists:seq(1, ?BUCKET_COUNT)],
     Objects0 = upload_objects(UserWest, UserEast),
 
-    lager:info("Update weights with non-zero values, transition to multibag"),
+    logger:info("Update weights with non-zero values, transition to multibag"),
     set_weights(),
-    lager:info("Assert proxy get for object uploaded BEFORE multibag transition..."),
+    logger:info("Assert proxy get for object uploaded BEFORE multibag transition..."),
     assert_proxy_get(UserWest, UserEast, Objects0),
 
-    lager:info("Test proxy get for objects uploaded AFTER multibag transition..."),
+    logger:info("Test proxy get for objects uploaded AFTER multibag transition..."),
     upload_and_assert_proxy_get(UserWest, UserEast),
 
-    lager:info("Disable proxy_get and confirm it does not work actually."),
+    logger:info("Disable proxy_get and confirm it does not work actually."),
     [rtcs_exec:disable_proxy_get(rtcs_dev:node_id(WLeader), current, EName) ||
         {{WLeader, _WNodes, _WName}, {_ELeader, _ENodes, EName}} <- Pairs],
     assert_proxy_get_does_not_work(UserWest, UserEast),
 
-    lager:info("Enable proxy_get again."),
+    logger:info("Enable proxy_get again."),
     [rtcs_exec:enable_proxy_get(rtcs_dev:node_id(WLeader), current, EName) ||
         {{WLeader, _WNodes, _WName}, {_ELeader, _ENodes, EName}} <- Pairs],
     upload_and_assert_proxy_get(UserWest, UserEast),
@@ -64,7 +64,7 @@ upload_and_assert_proxy_get(UserWest, UserEast) ->
     assert_proxy_get(UserWest, UserEast, Objects).
 
 upload_objects(UserWest, _UserEast) ->
-    lager:info("Upload objects at West"),
+    logger:info("Upload objects at West"),
     Normals = [rtcs_object:upload(UserWest, normal,
                                   ?BUCKET_PREFIX ++ integer_to_list(K), ?KEY_NORMAL) ||
                   K <- lists:seq(1, ?BUCKET_COUNT)],
@@ -84,7 +84,7 @@ upload_objects(UserWest, _UserEast) ->
     {Normals, MPs, NormalCopies, MPCopies}.
 
 assert_proxy_get(_UserWest, UserEast, {Normals, MPs, NormalCopies, MPCopies}) ->
-    lager:info("Try to download them from East..."),
+    logger:info("Try to download them from East..."),
     [rtcs_object:assert_whole_content(UserEast, B, K, Content) ||
         {B, K, Content} <- Normals],
     [rtcs_object:assert_whole_content(UserEast, B, K, Content) ||
@@ -93,25 +93,25 @@ assert_proxy_get(_UserWest, UserEast, {Normals, MPs, NormalCopies, MPCopies}) ->
         {B, K, Content} <- NormalCopies],
     [rtcs_object:assert_whole_content(UserEast, B, K, Content) ||
         {B, K, Content} <- MPCopies],
-    lager:info("Got every object via proxy_get. Perfect."),
+    logger:info("Got every object via proxy_get. Perfect."),
     ok.
 
 assert_proxy_get_does_not_work(UserWest, UserEast) ->
-    lager:info("Upload objects at West"),
+    logger:info("Upload objects at West"),
     Normals = [rtcs_object:upload(UserWest, normal,
                                   ?BUCKET_PREFIX ++ integer_to_list(K), ?KEY_NORMAL) ||
                   K <- lists:seq(1, ?BUCKET_COUNT)],
     MPs =  [rtcs_object:upload(UserWest, multipart,
                                ?BUCKET_PREFIX ++ integer_to_list(K), ?KEY_MP) ||
                   K <- lists:seq(1, ?BUCKET_COUNT)],
-    lager:info("Try to download them from East, all should fail..."),
+    logger:info("Try to download them from East, all should fail..."),
     [?assertError({aws_error,{socket_error,retry_later}},
                   erlcloud_s3:get_object(B, K, UserEast)) ||
         {B, K, _Content} <- Normals],
     [?assertError({aws_error,{socket_error,retry_later}},
                   erlcloud_s3:get_object(B, K, UserEast)) ||
         {B, K, _Content} <- MPs],
-    lager:info("Got connection close errors AS EXPECTED. Yay!."),
+    logger:info("Got connection close errors AS EXPECTED. Yay!."),
     ok.
 
 setup_clusters() ->
@@ -163,14 +163,14 @@ setup_clusters() ->
          Status = rpc:call(WLeader, riak_repl_console, status, [quiet]),
          case proplists:get_value(proxy_get_enabled, Status) of
              undefined -> ?assert(false);
-             EnabledFor -> lager:info("PG enabled for cluster ~p",[EnabledFor])
+             EnabledFor -> logger:info("PG enabled for cluster ~p",[EnabledFor])
          end,
          rt:wait_until_ring_converged(WNodes),
          rt:wait_until_ring_converged(ENodes),
          ok
      end || {{WLeader, WNodes, _WName}, {_ELeader, ENodes, EName}} <- Pairs],
 
-    lager:info("Replication setup finished."),
+    logger:info("Replication setup finished."),
     Pairs.
 
 set_zero_weight() ->

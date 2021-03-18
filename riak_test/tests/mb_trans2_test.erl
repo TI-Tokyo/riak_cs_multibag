@@ -64,13 +64,13 @@ transition_to_mb(NodesInMaster, State) ->
     rt:setup_log_capture(hd(cs_suites:nodes_of(cs, State))),
     rtcs_bag:set_weights(rtcs_bag:weights(disjoint)),
     {0, ListWeightRes} = rtcs_bag:list_weight(),
-    lager:info("Weight disjoint: ~s~n", [ListWeightRes]),
+    logger:info("Weight disjoint: ~s~n", [ListWeightRes]),
     {ok, State}.
 
 set_uniform_weights(State) ->
     rtcs_bag:set_weights(uniform_all_weights()),
     {0, ListWeightRes} = rtcs_bag:list_weight(),
-    lager:info("Weight disjoint: ~s~n", [ListWeightRes]),
+    logger:info("Weight disjoint: ~s~n", [ListWeightRes]),
     {ok, State}.
 
 uniform_all_weights() ->

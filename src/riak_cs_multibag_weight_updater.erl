@@ -113,7 +113,7 @@ handle_info(Event, State) when Event =:= refresh_by_timer orelse Event =:= timeo
         {ok, _WeightInfoList, NewState} ->
             {noreply, NewState};
         {error, Reason, NewState} ->
-            lager:error("Refresh of cluster weight information failed. Reason: ~p", [Reason]),
+            logger:error("Refresh of cluster weight information failed. Reason: ~p", [Reason]),
             {noreply, NewState}
     end;
 handle_info(_Info, State) ->
@@ -147,10 +147,10 @@ fetch_weights(#state{conn_open_fun=OpenFun, conn_close_fun=CloseFun} = State) ->
     end.
 
 handle_weight_info_list({error, notfound}, State) ->
-    lager:debug("Bag weight information is not found"),
+    logger:debug("Bag weight information is not found"),
     {ok, [], State#state{failed_count = 0}};
 handle_weight_info_list({error, Reason}, #state{failed_count = Count} = State) ->
-    lager:error("Retrieval of bag weight information failed. Reason: ~p", [Reason]),
+    logger:error("Retrieval of bag weight information failed. Reason: ~p", [Reason]),
     {error, Reason, State#state{failed_count = Count + 1}};
 handle_weight_info_list({ok, Obj}, State) ->
     %% TODO: How to handle siblings
@@ -210,7 +210,7 @@ update_weight_info1(Riakc, WeightInfoList) ->
     put_weight_info(Riakc, WeightInfoList, Current).
 
 put_weight_info(_Riakc, _WeightInfoList, {error, Reason}) ->
-    lager:error("Retrieval of bag weight information failed. Reason: ~p", [Reason]),
+    logger:error("Retrieval of bag weight information failed. Reason: ~p", [Reason]),
     {error, Reason};
 put_weight_info(Riakc, WeightInfoList, {ok, Obj}) ->
     NewObj = riakc_obj:update_value(
@@ -221,6 +221,6 @@ put_weight_info(Riakc, WeightInfoList, {ok, Obj}) ->
             riak_cs_multibag_server:new_weights(WeightInfoList),
             {ok, WeightInfoList};
         {error, Reason} ->
-            lager:error("Update of bag weight information failed. Reason: ~p", [Reason]),
+            logger:error("Update of bag weight information failed. Reason: ~p", [Reason]),
             {error, Reason}
     end.
