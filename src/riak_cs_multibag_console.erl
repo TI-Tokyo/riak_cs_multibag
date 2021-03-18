@@ -13,9 +13,8 @@
         try
             Code
         catch
-            Type:Reason ->
-                ST = erlang:get_stacktrace(),
-                io:format("~s failed:~n  ~p:~p~n  ~p",
+            Type:Reason:ST ->
+                io:format("~s failed:~n  ~p:~p\n  ~p\n",
                           [Description, Type, Reason, ST]),
                 error
         end).
