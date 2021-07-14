@@ -1,18 +1,18 @@
-.PHONY: deps test depgraph graphviz all compile
+.PHONY: deps test all compile
+
+REBAR = ./rebar3
 
 all: compile
 
-compile: deps
-	@(./rebar compile)
+compile:
+	@$(REBAR) compile
 
 deps:
-	@./rebar get-deps
+	$(if $(HEAD_REVISION),$(warning "Warning: you have checked out a tag ($(HEAD_REVISION)) and should use the compile target"))
+	$(REBAR) upgrade
 
 clean:
-	@./rebar clean
+	$(REBAR) clean
 
-DIALYZER_APPS = kernel stdlib sasl erts ssl tools os_mon runtime_tools crypto \
-	inets eunit
-PLT ?= $(HOME)/.riak-cs-multibag_dialyzer_plt
-
-include tools.mk
+distclean: clean devclean relclean
+	@rm -rf _build
