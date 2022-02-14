@@ -19,7 +19,6 @@
 -include("riak_cs_multibag.hrl").
 
 -ifdef(TEST).
--compile(export_all).
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 

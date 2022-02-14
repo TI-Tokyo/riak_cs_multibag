@@ -16,7 +16,7 @@
               pool_name :: atom(),
               address :: string(),
               port :: non_neg_integer(),
-              cluster_id :: binary()}).
+              cluster_id :: binary() | undefined}).
 
 -include("riak_cs_multibag.hrl").
 -include_lib("riak_pb/include/riak_pb_kv_codec.hrl").
