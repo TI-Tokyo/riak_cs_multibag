@@ -1,8 +1,2 @@
-.eunit
 _build/
-*.o
-*.beam
-*.plt
-erl_crash.dump
-.local_dialyzer_plt
-dialyzer_unhandled_warnings
+rebar.lock
