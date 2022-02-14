@@ -25,18 +25,15 @@
 
 process_specs() ->
     maybe_init(),
-    BagServer = {riak_cs_multibag_server,
-                 {riak_cs_multibag_server, start_link, []},
-                 permanent, 5000, worker, [riak_cs_multibag_server]},
+    BagServer = #{id => riak_cs_multibag_server,
+                  start => {riak_cs_multibag_server, start_link, []}},
     %% Pass connection open/close information not to "explicitly" depends on riak_cs
     %% and to make unit test easier.
     %% TODO: Pass these MF's by argument process_specs
     WeightUpdaterArgs = [{conn_open_mf, {riak_cs_utils, riak_connection}},
                          {conn_close_mf, {riak_cs_utils, close_riak_connection}}],
-    WeightUpdater = {riak_cs_multibag_weight_updater,
-                     {riak_cs_multibag_weight_updater, start_link,
-                      [WeightUpdaterArgs]},
-                     permanent, 5000, worker, [riak_cs_multibag_weight_updater]},
+    WeightUpdater = #{id => riak_cs_multibag_weight_updater,
+                      start => {riak_cs_multibag_weight_updater, start_link, [WeightUpdaterArgs]}},
     [BagServer, WeightUpdater].
 
 %% Choose bag ID for new bucket or new manifest
