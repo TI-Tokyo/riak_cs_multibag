@@ -60,7 +60,7 @@ handle_call({choose_bag, Type, Seed}, _From, #state{initialized = true} = State)
     end;
 handle_call({choose_bag, _Type, _Seed}, _From, #state{initialized = false} = State) ->
     {reply, {error, not_initialized}, State};
-handle_call(status, _From, #state{initialized=Initialized, 
+handle_call(status, _From, #state{initialized=Initialized,
                                   block=BlockWeights, manifest=ManifestWeights} = State) ->
     {reply, {ok, [{initialized, Initialized},
                   {block, BlockWeights}, {manifest, ManifestWeights}]}, State};
