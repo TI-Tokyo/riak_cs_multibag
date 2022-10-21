@@ -70,7 +70,7 @@ handle_call(Request, _From, State) ->
 handle_cast({new_weights, Weights}, State) ->
     NewState = update_weight_state(Weights, State),
     %% TODO: write log only when weights are updated.
-    %% lager:info("new_weights: ~p~n", [NewState]),
+    %% logger:info("new_weights: ~p~n", [NewState]),
     {noreply, NewState};
 handle_cast(_Msg, State) ->
     {noreply, State}.

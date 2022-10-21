@@ -7,12 +7,11 @@
   {vsn, git},
   {modules, []},
   {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib,
-                  inets,
-                  crypto,
-                  lager
-                 ]},
+  {applications,
+   [kernel,
+    stdlib,
+    inets,
+    crypto
+   ]},
   {env, []}
  ]}.
