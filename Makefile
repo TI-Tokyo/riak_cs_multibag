@@ -1,18 +1,23 @@
-.PHONY: deps test all compile
-
-REBAR = ./rebar3
-
-all: compile
+.PHONY: compile rel cover test dialyzer eqc
+REBAR=./rebar3
 
 compile:
-	@$(REBAR) compile
-
-deps:
-	$(if $(HEAD_REVISION),$(warning "Warning: you have checked out a tag ($(HEAD_REVISION)) and should use the compile target"))
-	$(REBAR) upgrade
+	$(REBAR) compile
 
 clean:
 	$(REBAR) clean
 
-distclean: clean devclean relclean
-	@rm -rf _build
+cover:
+	$(REBAR) eunit --cover
+	$(REBAR) cover
+
+test: compile
+	$(REBAR) eunit
+
+dialyzer:
+	$(REBAR) dialyzer
+
+xref:
+	$(REBAR) xref
+
+check: test dialyzer xref

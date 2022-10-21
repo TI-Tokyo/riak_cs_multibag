@@ -1,0 +1,34 @@
+name: Erlang CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        otp:
+          - "24"
+          - "23"
+          - "22"
+
+    container:
+      image: erlang:${{ matrix.otp }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile
+        run: apt-get update && apt-get install -y cmake libboost-dev && ./rebar3 compile
+      - name: Run xref and dialyzer
+        run: ./rebar3 do xref, dialyzer
+      - name: Run eunit
+        run: ./rebar3 as gha do eunit
