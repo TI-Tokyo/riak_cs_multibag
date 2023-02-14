@@ -60,7 +60,7 @@ The master bag stores following objects
 Manifests and blocks are distributed to each bags with following
 conditions.
 
-1. Manifests which belongs to a single bucket are stored in
+1. Manifests which belong to a single bucket are stored in
    the same bag. The bag ID for it is recorded in the bucket object.
 2. Blocks of a single manifests (not key, but manifest) are
    stored in the same bag. The bag ID for it is recorded in the
